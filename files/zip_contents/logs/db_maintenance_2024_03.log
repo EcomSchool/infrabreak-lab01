@@ -1,0 +1,9 @@
+2024-03-05 02:00:00 INFO  [maintenance] Starting scheduled DB maintenance
+2024-03-05 02:00:01 INFO  [db] Connecting to database...
+2024-03-05 02:00:01 DEBUG [db] Connection string: host=127.0.0.1 port=3306 user=dbadmin password=C0rp0r4te#2024 database=internaldb
+2024-03-05 02:00:03 INFO  [db] Connection successful
+2024-03-05 02:01:44 INFO  [db] Running vacuum on table users... done
+2024-03-05 02:03:10 INFO  [db] Running vacuum on table sessions... done
+2024-03-05 02:04:00 INFO  [db] Analyzing table employees... done
+2024-03-05 02:04:55 INFO  [db] Maintenance complete. Disconnecting.
+2024-03-05 02:04:55 INFO  [maintenance] Job finished successfully

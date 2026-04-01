@@ -1,0 +1,6 @@
+Q2 2024 Quarterly Infrastructure Report
+========================================
+Servers online: 14
+Incidents: 1 (patched)
+Uptime: 99.9%
+Next review: July 2024

@@ -1,0 +1,6 @@
+Q1 2024 Quarterly Infrastructure Report
+========================================
+Servers online: 12
+Incidents: 3 (all resolved)
+Uptime: 99.7%
+Next scheduled maintenance: April 5, 2024

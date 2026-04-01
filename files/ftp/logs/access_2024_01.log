@@ -1,0 +1,6 @@
+2024-01-14 08:12:33 INFO  [web] GET /dashboard 200 user=admin
+2024-01-14 08:15:44 INFO  [web] GET /api/users 200 user=admin
+2024-01-14 09:01:02 INFO  [db] Connection from 10.0.0.5 user=webuser
+2024-01-14 10:22:11 WARN  [db] Slow query detected (2.3s)
+2024-01-14 11:45:00 INFO  [cron] Backup started
+2024-01-14 11:46:12 INFO  [cron] Backup completed: /backups/db_backup_march.zip
