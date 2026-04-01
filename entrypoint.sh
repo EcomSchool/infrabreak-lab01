@@ -18,12 +18,22 @@ mysql -e "ALTER USER 'dbadmin'@'%' REQUIRE NONE;"
 mysql -e "FLUSH PRIVILEGES;"
 echo "[*] MySQL ready."
 
+# ---------------------------------------------------------
 # 4. POSTGRESQL SETUP
+# ---------------------------------------------------------
+echo "[*] Starting PostgreSQL..."
+# Configure Networking
 echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
 echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/14/main/pg_hba.conf
+
 service postgresql start
-su - postgres -c "psql -c \"CREATE ROLE pgadmin WITH LOGIN PASSWORD 'C0rp0r4te#2024';\"" || true
+
+# Force the password update as the 'postgres' superuser
+# We use LOGIN and NOSUPERUSER to ensure it's a standard lab user
+su - postgres -c "psql -c \"DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'pgadmin') THEN CREATE ROLE pgadmin WITH LOGIN PASSWORD 'C0rp0r4te#2024'; END IF; END \$\$;\""
 su - postgres -c "psql -c \"ALTER ROLE pgadmin WITH LOGIN PASSWORD 'C0rp0r4te#2024';\""
+su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE internaldb TO pgadmin;\""
+
 echo "[*] PostgreSQL ready."
 
 # 5. START APP
