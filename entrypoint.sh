@@ -24,6 +24,10 @@ service vsftpd start || (echo "[!] vsftpd failed, trying vsftpd directly..." && 
 
 # -------- MYSQL --------
 echo "[*] Starting MySQL..."
+# Allow remote connections in MySQL config
+sed -i 's/bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf 2>/dev/null || \
+sed -i 's/bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf 2>/dev/null || true
+
 service mysql start
 sleep 3
 
