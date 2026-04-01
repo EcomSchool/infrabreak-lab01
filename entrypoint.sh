@@ -20,7 +20,7 @@ service ssh start
 
 # -------- FTP --------
 echo "[*] Starting FTP..."
-service vsftpd start
+service vsftpd start || (echo "[!] vsftpd failed, trying vsftpd directly..." && vsftpd /etc/vsftpd.conf &)
 
 # -------- MYSQL --------
 echo "[*] Starting MySQL..."
