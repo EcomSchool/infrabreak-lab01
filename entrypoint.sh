@@ -3,114 +3,74 @@ set -e
 
 echo "[*] Starting InfraBreak: Exploitation Lab 01..."
 
-# -------- SSH KEYS --------
+# ---------------------------------------------------------
+# 1. SSH SETUP
+# ---------------------------------------------------------
 echo "[*] Generating SSH keypairs..."
-ssh-keygen -t rsa -b 2048 -f /tmp/alice_key -N "" -C "alice@internal" -q
-ssh-keygen -t rsa -b 2048 -f /tmp/charlie_key -N "" -C "charlie@internal" -q
-
-mkdir -p /home/charlie/.ssh
-cp /tmp/charlie_key.pub /home/charlie/.ssh/authorized_keys
-chown -R charlie:charlie /home/charlie/.ssh
-chmod 700 /home/charlie/.ssh
-chmod 600 /home/charlie/.ssh/authorized_keys
-
-# -------- SSHD --------
+ssh-keygen -A
 echo "[*] Starting SSH..."
 service ssh start
 
-# -------- FTP --------
+# ---------------------------------------------------------
+# 2. FTP SETUP
+# ---------------------------------------------------------
 echo "[*] Starting FTP..."
-service vsftpd start || (echo "[!] vsftpd failed, trying vsftpd directly..." && vsftpd /etc/vsftpd.conf &)
+service vsftpd start || {
+    echo "[!] vsftpd failed, trying vsftpd directly..."
+    vsftpd &
+}
 
-# -------- MYSQL --------
+# ---------------------------------------------------------
+# 3. MYSQL / MARIADB SETUP (Networking + Permissions)
+# ---------------------------------------------------------
 echo "[*] Starting MySQL..."
+# Force MySQL to listen on all interfaces (Fixes Error 115)
+sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf 2>/dev/null || true
+sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/my.cnf 2>/dev/null || true
+
 service mysql start
 
-# Wait for MySQL to be ready
-MAX_TRIES=30
-i=0
-while ! mysqladmin ping -u root --silent; do
-    sleep 1
-    i=$((i+1))
-    if [ $i -gt $MAX_TRIES ]; then
-        echo "[!] MySQL failed to start after $MAX_TRIES seconds"
-        break
-    fi
-done
-
-# Init schema
-mysql -u root < /docker-entrypoint-initdb.d/init_mysql.sql 2>/dev/null || true
-
-# Insert SSH keys + Stage 3 flag hidden in a secrets table
-ALICE_KEY=$(cat /tmp/alice_key)
-CHARLIE_KEY=$(cat /tmp/charlie_key)
-
-mysql -u root internaldb 2>/dev/null << SQL || true
-INSERT IGNORE INTO ssh_users (username, ssh_private_key, note) VALUES
-('alice', '${ALICE_KEY}', 'Dev server access - decommissioned'),
-('charlie', '${CHARLIE_KEY}', 'Monitoring access - active');
-
-CREATE TABLE IF NOT EXISTS internal_flags (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    label VARCHAR(128),
-    value VARCHAR(256)
-);
-INSERT IGNORE INTO internal_flags (label, value) VALUES
-('stage3', 'ECOM{db_dump_succ3ssful_g00d_j0b}');
-SQL
-
-# Ensure dbadmin remote user is properly set up
-cat > /tmp/fix_user.sql << 'SQLEOF'
-DROP USER IF EXISTS 'dbadmin'@'%';
-CREATE USER 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024' REQUIRE NONE;
-GRANT SELECT ON internaldb.* TO 'dbadmin'@'%';
-FLUSH PRIVILEGES;
-SQLEOF
-mysql -u root < /tmp/fix_user.sql
-echo "[*] MySQL user dbadmin created."
-
+# Configure User for Remote Access and Disable SSL (Fixes Error 1130 & 2026)
+mysql -e "CREATE USER IF NOT EXISTS 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';"
+mysql -e "GRANT ALL PRIVILEGES ON internaldb.* TO 'dbadmin'@'%' WITH GRANT OPTION;"
+mysql -e "ALTER USER 'dbadmin'@'%' REQUIRE NONE;"
+mysql -e "FLUSH PRIVILEGES;"
 echo "[*] MySQL ready."
 
-# -------- POSTGRESQL --------
+# ---------------------------------------------------------
+# 4. POSTGRESQL SETUP (Networking + Permissions)
+# ---------------------------------------------------------
 echo "[*] Starting PostgreSQL..."
+# Allow Postgres to listen on all interfaces
+echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
+# Allow remote connections in the HBA config
+echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/14/main/pg_hba.conf
+
 service postgresql start
-sleep 3
 
-PG_VERSION=$(ls /etc/postgresql/ | head -1)
-PG_HBA="/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
-PG_CONF="/etc/postgresql/${PG_VERSION}/main/postgresql.conf"
-
-grep -q "0.0.0.0/0" "$PG_HBA" || echo "host all all 0.0.0.0/0 md5" >> "$PG_HBA"
-grep -q "listen_addresses" "$PG_CONF" || echo "listen_addresses='*'" >> "$PG_CONF"
-
-service postgresql restart
-sleep 2
-
-sudo -u postgres psql -c "CREATE USER pgadmin WITH SUPERUSER PASSWORD 'sunshine';" 2>/dev/null || \
-sudo -u postgres psql -c "ALTER USER pgadmin WITH SUPERUSER PASSWORD 'sunshine';" 2>/dev/null || true
-
-# Stage 5 flag — readable by postgres service user after RCE
-echo 'ECOM{rce_v1a_cve_2019_9193_pwned}' > /var/lib/postgresql/flag.txt
-chown postgres:postgres /var/lib/postgresql/flag.txt
-chmod 640 /var/lib/postgresql/flag.txt
-
+# Ensure user exists with correct password
+su - postgres -c "psql -c \"ALTER USER pgadmin WITH PASSWORD 'C0rp0r4te#2024';\"" || \
+su - postgres -c "psql -c \"CREATE USER pgadmin WITH PASSWORD 'C0rp0r4te#2024';\""
 echo "[*] PostgreSQL ready."
 
-# -------- FLAG CHECKER WEB APP --------
+# ---------------------------------------------------------
+# 5. WEB APP / FLAG CHECKER
+# ---------------------------------------------------------
 echo "[*] Starting Flag Checker on port 8088..."
-cd /opt/flagchecker
-python3 app.py &
+cd /app
 
-echo ""
-echo "=========================================="
-echo "  InfraBreak: Exploitation Lab 01 — READY"
-echo "=========================================="
-echo "  FTP     : port 21  (anonymous login)"
-echo "  SSH     : port 22  (key-based, charlie)"
-echo "  MySQL   : port 3306"
-echo "  PgSQL   : port 5432"
-echo "  Flags   : http://<IP>:8088"
-echo "=========================================="
+cat <<EOF
 
-# Keep container alive
-tail -f /dev/null
+==========================================
+  InfraBreak: Exploitation Lab 01 — READY
+==========================================
+  FTP     : port 21  (anonymous login)
+  SSH     : port 22  (key-based, charlie)
+  MySQL   : port 3306
+  PgSQL   : port 5432
+  Flags   : http://<IP>:8088
+==========================================
+EOF
+
+# Run the Flask app as the foreground process
+exec python3 app.py
