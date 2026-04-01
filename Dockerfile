@@ -34,7 +34,7 @@ COPY files/flagchecker/app.py /opt/flagchecker/app.py
 RUN useradd -m -s /bin/bash charlie && \
     useradd -m -s /bin/bash pgadmin && \
     echo "charlie:ThisIsNotTheFlag" | chpasswd && \
-    echo "pgadmin:redteam2024" | chpasswd && \
+    echo "pgadmin:sunshine" | chpasswd && \
     usermod -aG sudo pgadmin
 
 # Postgres gets sudo to /bin/bash (privesc path)
@@ -80,7 +80,7 @@ COPY files/mysql_remote.cnf /etc/mysql/mysql.conf.d/remote.cnf
 # -------- CHARLIE HOME --------
 # Stage 4 flag
 RUN echo 'ECOM{ssh_k3y_fr0m_db_n1c3_w0rk}' > /home/charlie/flag.txt && \
-    printf 'TODO: Update pgadmin service password\nCurrent hash: d5961b48a4c9b57fa289155b3e64620a\n- Service runs on port 5432\n- Check with IT before changing\n' \
+    printf 'TODO: Update pgadmin service password\nCurrent hash: 0571749e2ac330a7455809c6b0e7af90\n- Service runs on port 5432\n- Check with IT before changing\n' \
         > /home/charlie/notes.txt && \
     chown charlie:charlie /home/charlie/flag.txt /home/charlie/notes.txt && \
     chmod 644 /home/charlie/flag.txt /home/charlie/notes.txt

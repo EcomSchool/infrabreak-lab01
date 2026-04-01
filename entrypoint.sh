@@ -86,8 +86,8 @@ grep -q "listen_addresses" "$PG_CONF" || echo "listen_addresses='*'" >> "$PG_CON
 service postgresql restart
 sleep 2
 
-sudo -u postgres psql -c "CREATE USER pgadmin WITH SUPERUSER PASSWORD 'redteam2024';" 2>/dev/null || \
-sudo -u postgres psql -c "ALTER USER pgadmin WITH SUPERUSER PASSWORD 'redteam2024';" 2>/dev/null || true
+sudo -u postgres psql -c "CREATE USER pgadmin WITH SUPERUSER PASSWORD 'sunshine';" 2>/dev/null || \
+sudo -u postgres psql -c "ALTER USER pgadmin WITH SUPERUSER PASSWORD 'sunshine';" 2>/dev/null || true
 
 # Stage 5 flag — readable by postgres service user after RCE
 echo 'ECOM{rce_v1a_cve_2019_9193_pwned}' > /var/lib/postgresql/flag.txt
