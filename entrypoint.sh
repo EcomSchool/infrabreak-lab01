@@ -3,74 +3,41 @@ set -e
 
 echo "[*] Starting InfraBreak: Exploitation Lab 01..."
 
-# ---------------------------------------------------------
 # 1. SSH SETUP
-# ---------------------------------------------------------
-echo "[*] Generating SSH keypairs..."
-ssh-keygen -A
-echo "[*] Starting SSH..."
 service ssh start
 
-# ---------------------------------------------------------
 # 2. FTP SETUP
-# ---------------------------------------------------------
-echo "[*] Starting FTP..."
-service vsftpd start || {
-    echo "[!] vsftpd failed, trying vsftpd directly..."
-    vsftpd &
-}
+service vsftpd start || vsftpd &
 
-# ---------------------------------------------------------
-# 3. MYSQL / MARIADB SETUP (Networking + Permissions)
-# ---------------------------------------------------------
-echo "[*] Starting MySQL..."
-# Force MySQL to listen on all interfaces (Fixes Error 115)
+# 3. MYSQL SETUP
 sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf 2>/dev/null || true
-sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/my.cnf 2>/dev/null || true
-
 service mysql start
-
-# Configure User for Remote Access and Disable SSL (Fixes Error 1130 & 2026)
 mysql -e "CREATE USER IF NOT EXISTS 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';"
 mysql -e "GRANT ALL PRIVILEGES ON internaldb.* TO 'dbadmin'@'%' WITH GRANT OPTION;"
 mysql -e "ALTER USER 'dbadmin'@'%' REQUIRE NONE;"
 mysql -e "FLUSH PRIVILEGES;"
 echo "[*] MySQL ready."
 
-# ---------------------------------------------------------
-# 4. POSTGRESQL SETUP (Networking + Permissions)
-# ---------------------------------------------------------
-echo "[*] Starting PostgreSQL..."
-# Allow Postgres to listen on all interfaces
+# 4. POSTGRESQL SETUP
 echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
-# Allow remote connections in the HBA config
 echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/14/main/pg_hba.conf
-
 service postgresql start
-
-# Ensure user exists with correct password
-su - postgres -c "psql -c \"ALTER USER pgadmin WITH PASSWORD 'C0rp0r4te#2024';\"" || \
-su - postgres -c "psql -c \"CREATE USER pgadmin WITH PASSWORD 'C0rp0r4te#2024';\""
+su - postgres -c "psql -c \"CREATE ROLE pgadmin WITH LOGIN PASSWORD 'C0rp0r4te#2024';\"" || true
+su - postgres -c "psql -c \"ALTER ROLE pgadmin WITH LOGIN PASSWORD 'C0rp0r4te#2024';\""
 echo "[*] PostgreSQL ready."
 
-# ---------------------------------------------------------
-# 5. WEB APP / FLAG CHECKER
-# ---------------------------------------------------------
-echo "[*] Starting Flag Checker on port 8088..."
-cd /app
+# 5. START APP
+echo "[*] Starting Flag Checker..."
+# Change this to the actual path where app.py sits. 
+# Based on your repo, it's the root directory.
+cd / 
 
-cat <<EOF
+# Use 'nohup' so the script doesn't crash if the python app fails
+nohup python3 app.py > /var/log/app.log 2>&1 &
 
-==========================================
-  InfraBreak: Exploitation Lab 01 — READY
-==========================================
-  FTP     : port 21  (anonymous login)
-  SSH     : port 22  (key-based, charlie)
-  MySQL   : port 3306
-  PgSQL   : port 5432
-  Flags   : http://<IP>:8088
-==========================================
-EOF
+echo "=========================================="
+echo "  InfraBreak: Lab 01 is now LIVE"
+echo "=========================================="
 
-# Run the Flask app as the foreground process
-exec python3 app.py
+# KEEP ALIVE: This prevents the container from exiting
+tail -f /dev/null
