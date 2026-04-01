@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "[*] Starting ECOM Lab..."
+echo "[*] Starting InfraBreak: Exploitation Lab 01..."
 
-# -------- SSH KEYS (generated fresh each container start) --------
+# -------- SSH KEYS --------
 echo "[*] Generating SSH keypairs..."
 ssh-keygen -t rsa -b 2048 -f /tmp/alice_key -N "" -C "alice@internal" -q
 ssh-keygen -t rsa -b 2048 -f /tmp/charlie_key -N "" -C "charlie@internal" -q
@@ -15,11 +15,11 @@ chmod 700 /home/charlie/.ssh
 chmod 600 /home/charlie/.ssh/authorized_keys
 
 # -------- SSHD --------
-echo "[*] Starting SSH daemon..."
+echo "[*] Starting SSH..."
 service ssh start
 
 # -------- FTP --------
-echo "[*] Starting FTP server..."
+echo "[*] Starting FTP..."
 service vsftpd start
 
 # -------- MYSQL --------
@@ -27,22 +27,31 @@ echo "[*] Starting MySQL..."
 service mysql start
 sleep 3
 
-# Init DB schema
+# Init schema
 mysql -u root < /docker-entrypoint-initdb.d/init_mysql.sql 2>/dev/null || true
 
-# Insert SSH keys
+# Insert SSH keys + Stage 3 flag hidden in a secrets table
 ALICE_KEY=$(cat /tmp/alice_key)
 CHARLIE_KEY=$(cat /tmp/charlie_key)
 
 mysql -u root internaldb 2>/dev/null << SQL || true
-INSERT INTO ssh_users (username, ssh_private_key, note) VALUES
+INSERT IGNORE INTO ssh_users (username, ssh_private_key, note) VALUES
 ('alice', '${ALICE_KEY}', 'Dev server access - decommissioned'),
 ('charlie', '${CHARLIE_KEY}', 'Monitoring access - active');
+
+CREATE TABLE IF NOT EXISTS internal_flags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    label VARCHAR(128),
+    value VARCHAR(256)
+);
+INSERT IGNORE INTO internal_flags (label, value) VALUES
+('stage3', 'ECOM{db_dump_succ3ssful_g00d_j0b}');
 SQL
 
-# Also update dbadmin password in case init ran with old value
+# Ensure dbadmin password is correct
 mysql -u root 2>/dev/null << SQL2 || true
 ALTER USER 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';
+GRANT SELECT ON internaldb.* TO 'dbadmin'@'%';
 FLUSH PRIVILEGES;
 SQL2
 
@@ -53,11 +62,6 @@ echo "[*] Starting PostgreSQL..."
 service postgresql start
 sleep 3
 
-# Configure pgadmin user as superuser (needed for CVE-2019-9193 exploit)
-sudo -u postgres psql -c "CREATE USER pgadmin WITH SUPERUSER PASSWORD 'redteam2024';" 2>/dev/null || \
-sudo -u postgres psql -c "ALTER USER pgadmin WITH SUPERUSER PASSWORD 'redteam2024';" 2>/dev/null || true
-
-# Allow remote connections
 PG_VERSION=$(ls /etc/postgresql/ | head -1)
 PG_HBA="/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
 PG_CONF="/etc/postgresql/${PG_VERSION}/main/postgresql.conf"
@@ -68,11 +72,31 @@ grep -q "listen_addresses" "$PG_CONF" || echo "listen_addresses='*'" >> "$PG_CON
 service postgresql restart
 sleep 2
 
-echo "[+] ECOM Lab is ready."
-echo "    FTP  : port 21 (anonymous)"
-echo "    MySQL: port 3306 (dbadmin / Welc0me2024!)"
-echo "    SSH  : port 22 (charlie key from DB)"
-echo "    PgSQL: port 5432 (pgadmin / sunshine95)"
+sudo -u postgres psql -c "CREATE USER pgadmin WITH SUPERUSER PASSWORD 'redteam2024';" 2>/dev/null || \
+sudo -u postgres psql -c "ALTER USER pgadmin WITH SUPERUSER PASSWORD 'redteam2024';" 2>/dev/null || true
+
+# Stage 5 flag — readable by postgres service user after RCE
+echo 'ECOM{rce_v1a_cve_2019_9193_pwned}' > /var/lib/postgresql/flag.txt
+chown postgres:postgres /var/lib/postgresql/flag.txt
+chmod 640 /var/lib/postgresql/flag.txt
+
+echo "[*] PostgreSQL ready."
+
+# -------- FLAG CHECKER WEB APP --------
+echo "[*] Starting Flag Checker on port 8088..."
+cd /opt/flagchecker
+python3 app.py &
+
+echo ""
+echo "=========================================="
+echo "  InfraBreak: Exploitation Lab 01 — READY"
+echo "=========================================="
+echo "  FTP     : port 21  (anonymous login)"
+echo "  SSH     : port 22  (key-based, charlie)"
+echo "  MySQL   : port 3306"
+echo "  PgSQL   : port 5432"
+echo "  Flags   : http://<IP>:8088"
+echo "=========================================="
 
 # Keep container alive
 tail -f /dev/null
