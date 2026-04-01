@@ -55,7 +55,7 @@ SQL
 # Ensure dbadmin remote user is properly set up
 cat > /tmp/fix_user.sql << 'SQLEOF'
 DROP USER IF EXISTS 'dbadmin'@'%';
-CREATE USER 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';
+CREATE USER 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024' REQUIRE NONE;
 GRANT SELECT ON internaldb.* TO 'dbadmin'@'%';
 FLUSH PRIVILEGES;
 SQLEOF
