@@ -52,12 +52,15 @@ INSERT IGNORE INTO internal_flags (label, value) VALUES
 ('stage3', 'ECOM{db_dump_succ3ssful_g00d_j0b}');
 SQL
 
-# Ensure dbadmin password is correct
-mysql -u root 2>/dev/null << SQL2 || true
-ALTER USER 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';
+# Ensure dbadmin remote user is properly set up
+cat > /tmp/fix_user.sql << 'SQLEOF'
+DROP USER IF EXISTS 'dbadmin'@'%';
+CREATE USER 'dbadmin'@'%' IDENTIFIED BY 'C0rp0r4te#2024';
 GRANT SELECT ON internaldb.* TO 'dbadmin'@'%';
 FLUSH PRIVILEGES;
-SQL2
+SQLEOF
+mysql -u root < /tmp/fix_user.sql
+echo "[*] MySQL user dbadmin created."
 
 echo "[*] MySQL ready."
 
