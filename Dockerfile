@@ -75,6 +75,7 @@ RUN echo 'ECOM{zip_crack3d_w1th_r0cky0u}' > /tmp/zip_contents/logs/flag.txt && \
 
 # -------- MYSQL INIT --------
 COPY files/init_mysql.sql /docker-entrypoint-initdb.d/init_mysql.sql
+COPY files/mysql_remote.cnf /etc/mysql/mysql.conf.d/remote.cnf
 
 # -------- CHARLIE HOME --------
 # Stage 4 flag

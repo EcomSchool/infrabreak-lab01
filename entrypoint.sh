@@ -24,12 +24,19 @@ service vsftpd start || (echo "[!] vsftpd failed, trying vsftpd directly..." && 
 
 # -------- MYSQL --------
 echo "[*] Starting MySQL..."
-# Allow remote connections in MySQL config
-sed -i 's/bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf 2>/dev/null || \
-sed -i 's/bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/my.cnf 2>/dev/null || true
-
 service mysql start
-sleep 3
+
+# Wait for MySQL to be ready
+MAX_TRIES=30
+i=0
+while ! mysqladmin ping -u root --silent; do
+    sleep 1
+    i=$((i+1))
+    if [ $i -gt $MAX_TRIES ]; then
+        echo "[!] MySQL failed to start after $MAX_TRIES seconds"
+        break
+    fi
+done
 
 # Init schema
 mysql -u root < /docker-entrypoint-initdb.d/init_mysql.sql 2>/dev/null || true
