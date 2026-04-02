@@ -56,32 +56,27 @@ docker run -d --name infrabreak-lab01 \
   infrabreak-lab01
 ```
 
-### Get the Target IP
+### Target IP
 
-```bash
-# If running the Docker container locally:
-docker inspect infrabreak-lab01 | grep IPAddress
+If you are running the Docker container locally on your own machine, the target IP is simply **`127.0.0.1`**.
 
-# If the lab is hosted on a VM, scan for or use the VM's assigned IP address.
-```
-
-## 🌐 Open Services
-
-| Port | Service Focus |
-|------|---------|
-| 21 | ??? |
-| 22 | ??? |
-| 3306 | ??? |
-| 5432 | ??? |
-| 8088 | Flag Checker (Web UI) |
-
-*(Part of the challenge is identifying what is running on these ports and finding the initial foothold!)*
+> Note: If the lab is hosted on a remote VM, you will need to use that VM's assigned IP address.
 
 ## 🚩 Flags
 
 There are **6 specific flags** to capture. Submit them into the Flag Checker portal as you find them!
 
-Access the portal at: `http://<TARGET_IP>:8088`
+Access the portal at: `http://127.0.0.1:8088` (or the IP of your VM).
+
+## 📄 Final Deliverable: Penetration Test Report
+
+As you progress through the lab, you are strongly advised to document your findings and compile a professional **Penetration Testing (PT) Report**. Treating this like a real commercial engagement will maximize your learning!
+
+Your report should include:
+- **Detailed Explanations**: A step-by-step narrative of your attack paths.
+- **Screenshots**: Visual proof of exploitation at each critical stage.
+- **Vulnerability Breakdown**: An analysis of the specific flaws discovered.
+- **Recommendations & Advisories**: Actionable mitigation advice on how the organization should secure their environment and patch the issues.
 
 ## 🔄 Reset the Lab
 
