@@ -384,6 +384,48 @@ HTML = """
     to { opacity: 1; transform: translateY(0); }
   }
 
+  .congratulations-banner {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 170, 255, 0.15) 100%);
+    border: 2px solid var(--neon-green);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+    margin-bottom: 1rem;
+    animation: pulseGlow 1.5s infinite alternate;
+  }
+
+  .congratulations-banner h2 {
+    font-size: 2.5rem;
+    color: #fff;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+
+  .congratulations-banner p {
+    font-size: 1.2rem;
+    color: #c0d0e0;
+    margin-bottom: 2rem;
+  }
+
+  .badge-image {
+    width: 250px;
+    filter: drop-shadow(0 0 20px var(--neon-blue));
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    from { box-shadow: 0 0 20px rgba(0, 255, 136, 0.2); }
+    to { box-shadow: 0 0 50px rgba(0, 255, 136, 0.6); }
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+  }
+
   .footer {
     text-align: center;
     margin-top: 3rem;
@@ -429,6 +471,18 @@ HTML = """
 
   <!-- Main Stages -->
   <div class="stages-container">
+
+    {% if progress == 100 %}
+    <div class="congratulations-banner">
+      <h2>🎉 LAB COMPLETE! 🎉</h2>
+      <p>Congratulations! You have successfully exploited all stages and achieved total compromise. Enjoy your official ECOM Completion Badge!</p>
+      <img src="{{ url_for('static', filename='ecom_badge.png') }}" class="badge-image" alt="ECOM Completion Badge">
+      <div style="margin-top: 2rem; font-size: 1.5rem; font-family: 'Fira Code', monospace; color: var(--neon-green);">
+        Final Score: {{ score }} / {{ max_score }}
+      </div>
+    </div>
+    {% endif %}
+
     {% for sid, stage in stages.items() %}
     <div class="panel stage {% if stage.solved %}solved{% endif %}">
       
