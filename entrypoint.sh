@@ -43,6 +43,9 @@ mysql -u root internaldb 2>/dev/null << SQL || true
 INSERT IGNORE INTO ssh_users (username, ssh_private_key, note) VALUES
 ('alice', '${ALICE_KEY}', 'Dev server access - decommissioned'),
 ('charlie', '${CHARLIE_KEY}', 'Monitoring access - active');
+SQL
+
+mysql -u root internaldb 2>/dev/null << SQL || true
 INSERT IGNORE INTO internal_flags (label, value) VALUES
 ('stage3', 'ECOM{db_dump_succ3ssful_g00d_j0b}');
 SQL

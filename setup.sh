@@ -130,6 +130,12 @@ CREATE TABLE IF NOT EXISTS projects (
     lead VARCHAR(64)
 );
 
+CREATE TABLE IF NOT EXISTS internal_flags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    label VARCHAR(128),
+    value VARCHAR(256)
+);
+
 INSERT INTO employees VALUES
 (1,'Sarah Johnson','Engineering','sarah.j@internal.corp','EMP-1042'),
 (2,'Mark Williams','DevOps','mark.w@internal.corp','EMP-1087'),
@@ -140,6 +146,9 @@ INSERT INTO projects VALUES
 (1,'Network Refresh','Active','Mark Williams'),
 (2,'SIEM Deployment','Planning','Emma Chen'),
 (3,'DR Site Upgrade','Completed','James Rodriguez');
+
+INSERT IGNORE INTO internal_flags (label, value) VALUES
+('stage3', 'ECOM{db_dump_succ3ssful_g00d_j0b}');
 
 CREATE USER IF NOT EXISTS 'dbadmin'@'%' IDENTIFIED BY 'Welc0me2024!';
 GRANT SELECT ON internaldb.* TO 'dbadmin'@'%';
