@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
 COPY files/flagchecker/requirements.txt /opt/flagchecker/requirements.txt
 RUN pip3 install -r /opt/flagchecker/requirements.txt
 COPY files/flagchecker/app.py /opt/flagchecker/app.py
+COPY files/flagchecker/static /opt/flagchecker/static
 
 # -------- USERS --------
 RUN useradd -m -s /bin/bash charlie && \

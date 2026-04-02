@@ -79,11 +79,13 @@ HTML = """
 
   .container {
     display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 2rem;
-    max-width: 1200px;
+    grid-template-columns: 320px minmax(500px, 800px);
+    gap: 3rem;
+    max-width: 1400px;
     width: 100%;
+    justify-content: center;
     align-items: start;
+    margin: 0 auto;
   }
 
   @media (max-width: 900px) {
@@ -214,12 +216,13 @@ HTML = """
   .stages-container {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
   .stage {
     position: relative;
     transition: transform 0.2s, box-shadow 0.2s;
+    padding: 2.2rem;
   }
   
   .stage:hover {
@@ -236,16 +239,16 @@ HTML = """
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
   }
 
   .stage-title {
-    font-size: 1.2rem;
+    font-size: 1.45rem;
     font-weight: 600;
     color: #fff;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.8rem;
   }
 
   .badge-solved {
@@ -309,10 +312,10 @@ HTML = """
     background: rgba(0,0,0,0.5);
     border: 1px solid var(--border-color);
     color: var(--neon-green);
-    padding: 0.8rem 1rem;
+    padding: 1.2rem 1.5rem;
     border-radius: 8px;
     font-family: 'Fira Code', monospace;
-    font-size: 0.95rem;
+    font-size: 1.15rem;
     transition: all 0.3s;
   }
 
@@ -326,8 +329,9 @@ HTML = """
     background: var(--neon-green);
     color: #000;
     border: none;
-    padding: 0 1.5rem;
+    padding: 0 2.5rem;
     border-radius: 8px;
+    font-size: 1.25rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
