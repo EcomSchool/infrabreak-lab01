@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     project_name VARCHAR(128),
     status VARCHAR(32),
-    lead VARCHAR(64)
+    project_lead VARCHAR(64)
 );
 
 INSERT INTO employees VALUES
