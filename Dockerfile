@@ -85,6 +85,12 @@ RUN echo 'ECOM{ssh_k3y_fr0m_db_n1c3_w0rk}' > /home/charlie/flag.txt && \
     chown charlie:charlie /home/charlie/flag.txt /home/charlie/notes.txt && \
     chmod 644 /home/charlie/flag.txt /home/charlie/notes.txt
 
+# -------- POSTGRESQL CONFIG (baked in at build time for reliable remote access) --------
+COPY files/pg_hba.conf /etc/postgresql/14/main/pg_hba.conf
+RUN echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf && \
+    chown postgres:postgres /etc/postgresql/14/main/pg_hba.conf && \
+    chmod 640 /etc/postgresql/14/main/pg_hba.conf
+
 # -------- ROOT FLAG (Stage 6) --------
 RUN echo 'ECOM{r00t_0wn3d_infrabreak_01_gg}' > /root/root_flag.txt && \
     chmod 600 /root/root_flag.txt
