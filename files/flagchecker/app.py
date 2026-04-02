@@ -78,18 +78,13 @@ HTML = """
   }
 
   .container {
-    display: grid;
-    grid-template-columns: 320px minmax(500px, 800px);
-    gap: 3rem;
-    max-width: 1400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    max-width: 950px;
     width: 100%;
-    justify-content: center;
-    align-items: start;
     margin: 0 auto;
-  }
-
-  @media (max-width: 900px) {
-    .container { grid-template-columns: 1fr; }
   }
 
   /* Glassmorphism Panel Base */
@@ -103,23 +98,30 @@ HTML = """
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   }
 
-  /* Sidebar - Scoreboard */
+  /* Top Section - Scoreboard & Logo */
   .sidebar {
-    position: sticky;
-    top: 2rem;
+    width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 1.5rem;
+    align-items: stretch;
+    justify-content: center;
   }
   
   .logo-container {
+    flex: 1;
+    min-width: 250px;
     text-align: center;
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
   
   .logo-container img {
     width: 140px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.2));
   }
   
@@ -133,6 +135,8 @@ HTML = """
   }
   
   .score-card {
+    flex: 2;
+    min-width: 300px;
     text-align: center;
     padding: 1.5rem;
     border-radius: 12px;
@@ -214,6 +218,7 @@ HTML = """
 
   /* Main Stages Section */
   .stages-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 2rem;
