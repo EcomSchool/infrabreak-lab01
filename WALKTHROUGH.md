@@ -15,7 +15,7 @@ nmap scan
             → SSH as charlie → Flag 4 (~/flag.txt) + hash hint
               → crack MD5 hash → sunshine
                 → psql pgadmin:sunshine
-                  → Metasploit CVE-2019-9193 RCE → Flag 5 (/var/lib/postgresql/flag.txt)
+                  → Metasploit CVE-2019-9193 RCE → Flag 5 (/var/lib/postgresql/14/main/flag.txt)
                     → sudo /bin/bash → root → Flag 6 (/root/root_flag.txt)
 ```
 
@@ -163,7 +163,7 @@ run
 
 ```bash
 # Flag 5 is readable by the postgres user
-cat /var/lib/postgresql/flag.txt
+cat /var/lib/postgresql/14/main/flag.txt
 # ECOM{rce_v1a_cve_2019_9193_pwned}
 
 # Escalate to root (Flag 6)

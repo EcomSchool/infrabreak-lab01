@@ -68,9 +68,9 @@ sudo -u postgres psql -c "CREATE USER pgadmin WITH SUPERUSER PASSWORD 'sunshine'
 sudo -u postgres psql -c "ALTER USER pgadmin WITH SUPERUSER PASSWORD 'sunshine';" 2>/dev/null || true
 
 # Stage 5 flag
-echo 'ECOM{rce_v1a_cve_2019_9193_pwned}' > /var/lib/postgresql/flag.txt
-chown postgres:postgres /var/lib/postgresql/flag.txt
-chmod 640 /var/lib/postgresql/flag.txt
+echo 'ECOM{rce_v1a_cve_2019_9193_pwned}' > /var/lib/postgresql/14/main/flag.txt
+chown postgres:postgres /var/lib/postgresql/14/main/flag.txt
+chmod 640 /var/lib/postgresql/14/main/flag.txt
 
 echo "[*] PostgreSQL ready."
 
