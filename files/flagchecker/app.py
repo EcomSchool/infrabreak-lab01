@@ -415,11 +415,7 @@ HTML = """
       </div>
     </div>
 
-    <form method="POST" action="/reset" style="margin-top: 1rem;">
-      <button type="submit" class="btn-reset" onclick="return confirm('Are you sure you want to reset all your progress and score?')">
-        <i class="fa-solid fa-rotate-right"></i> Reset Lab Progress
-      </button>
-    </form>
+    </div>
   </div>
 
   <!-- Main Stages -->
@@ -521,12 +517,12 @@ def compute_state():
         
         points_earned = 0
         if is_solved:
-            pts = 1000
-            if hints: pts -= 200
-            pts -= (attempts * 50)
-            if pts < 0: pts = 0
-            points_earned = pts
-            score += pts
+            points_earned += 1000
+        if hints: 
+            points_earned -= 200
+        points_earned -= (attempts * 50)
+        
+        score += points_earned
             
         stages_data[sid] = {
             "name": flag["name"],
@@ -594,11 +590,6 @@ def reveal_hint():
         session["hints"] = hints
         session.modified = True
         
-    return redirect(url_for('index'))
-
-@app.route("/reset", methods=["POST"])
-def reset_progress():
-    session.clear()
     return redirect(url_for('index'))
 
 if __name__ == "__main__":
